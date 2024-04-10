@@ -1,0 +1,194 @@
+import speech_recognition as sr
+import pyttsx3
+import openai
+import time
+import requests
+
+# Initialize Text-to-Speech engine
+engine = pyttsx3.init()
+
+# OpenAI API key
+openai.api_key = "your_openai_api_key"
+
+# Function to speak the response
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
+
+# Function to listen for activation keyword "Friday"
+def listen_activation_keyword():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening for activation keyword...")
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.listen(source)
+
+    try:
+        text = recognizer.recognize_google(audio)
+        print("You said:", text)
+        return text.lower()
+    except sr.UnknownValueError:
+        print("Sorry, I didn't catch that.")
+        return ""
+    except sr.RequestError:
+        print("Sorry, couldn't request results. Please check your internet connection.")
+        return ""
+
+# Function to listen to the user's voice input
+def listen():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.listen(source)
+
+    try:
+        text = recognizer.recognize_google(audio)
+        print("User said:", text)
+        return text.lower()
+    except sr.UnknownValueError:
+        print("Sorry, I didn't understand that.")
+        return ""
+    except sr.RequestError:
+        print("Sorry, couldn't request results. Please check your internet connection.")
+        return ""
+
+# Example of using AI to answer general knowledge questions
+def answer_question(question):
+    # Use AI to retrieve the answer from a knowledge base or API
+    answer = "Example answer for: " + question
+    return answer
+
+# Function to interact with GPT-3 for natural conversation
+def chat_with_gpt(prompt):
+    response = openai.Completion.create(
+        engine="davinci", prompt=prompt, max_tokens=50
+    )
+    return response.choices[0].text.strip()
+
+# Function to send an email
+def send_email(to, subject, body):
+    # Implement functionality to send email
+    print(f"Email sent to {to} with subject: {subject} and body: {body}")
+
+# Function to set a reminder
+def set_reminder(time, message):
+    # Implement functionality to set a reminder
+    print(f"Reminder set for {time}: {message}")
+    time.sleep(int(time))  # Wait for the specified time
+    print("Reminder:", message)
+
+# Function to get weather updates
+def get_weather(location):
+    # API key for OpenWeatherMap
+    api_key = "30d4741c779ba94c470ca1f63045390a"
+
+    # Base URL for OpenWeatherMap API
+    base_url = "http://api.openweathermap.org/data/2.5/weather?"
+
+    # Constructing the URL
+    complete_url = f"{base_url}q={location}&appid={api_key}"
+
+    # Sending GET request and getting the response
+    response = requests.get(complete_url)
+
+    print("Response status code:", response.status_code)
+    print("Response text:", response.text)
+
+    # Parsing the response
+    data = response.json()
+
+    if response.status_code == 200:
+        # Extracting weather information
+        main_data = data["main"]
+        temperature = main_data["temp"]
+        humidity = main_data["humidity"]
+
+        weather_description = data["weather"][0]["description"]
+
+        # Convert temperature from Kelvin to Celsius
+        temperature_celsius = temperature - 273.15
+
+        # Constructing the weather update message
+        weather_update = f"The current weather in {location} is {weather_description}. "
+        weather_update += f"The temperature is {temperature_celsius:.2f}°C and the humidity is {humidity}%."
+
+        return weather_update
+    else:
+        return "City not found or weather information not available."
+
+
+# Function to control smart home devices
+def control_devices(action, device):
+    # Implement functionality to control smart home devices
+    print(f"Performed action '{action}' on device '{device}'")
+
+# Function to write a passage using GPT-3
+def write_passage(topic):
+    prompt = f"Write a passage on the topic: {topic}"
+    return chat_with_gpt(prompt)
+
+# Main function to interact with the user
+def main():
+    while True:
+        activation_keyword = listen_activation_keyword()
+        if "friday" in activation_keyword:
+            speak("Yes Boss")
+            while True:
+                user_input = listen().lower()
+
+                if "question" in user_input:
+                    speak("What's your question?")
+                    question = listen()
+                    answer = answer_question(question)
+                    speak(answer)
+                elif "chat" in user_input:
+                    speak("Sure, what would you like to talk about?")
+                    prompt = listen()
+                    response = chat_with_gpt(prompt)
+                    speak(response)
+                elif "send email" in user_input:
+                    speak("Who is the recipient?")
+                    recipient = listen()
+                    speak("What is the subject?")
+                    subject = listen()
+                    speak("What should I say?")
+                    body = listen()
+                    send_email(recipient, subject, body)
+                    speak("Email sent successfully!")
+                elif "set reminder" in user_input:
+                    speak("In how many seconds should I remind you?")
+                    time = listen()
+                    speak("What should the reminder say?")
+                    message = listen()
+                    set_reminder(time, message)
+                    speak("Reminder set successfully!")
+                elif "weather" in user_input:
+                    speak("Sure, what's the location?")
+                    location = listen()
+                    weather = get_weather(location)
+                    speak(weather)
+                elif "control device" in user_input:
+                    speak("What action should I perform?")
+                    action = listen()
+                    speak("Which device?")
+                    device = listen()
+                    control_devices(action, device)
+                    speak(f"Performed action '{action}' on device '{device}' successfully!")
+                elif "write passage" in user_input or "right passage" in user_input or "white passage" in user_input:
+                    speak("What should be the topic of the passage?")
+                    topic = listen()
+                    passage = write_passage(topic)
+                    speak("Here is the passage:")
+                    speak(passage)
+                elif "stop" in user_input or "exit" in user_input:
+                    speak("Goodbye!")
+                    return  # Return from the main function when the user wants to stop
+                else:
+                    speak("Sorry, I cannot help with that.")
+
+        else:
+            speak("Sorry, i want the activation code")
+
+if __name__ == "__main__":
+    main()
