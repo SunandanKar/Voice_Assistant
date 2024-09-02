@@ -91,7 +91,7 @@ def handle_interaction():
             recipient = listen()
             speak("What is the subject?")
             subject = listen()
-            speak("How should it sond like")
+            speak("How should it sound like")
             body = listen()
             email_content = generate_response(f"Compose an email to {recipient} with subject '{subject}' and the content should be '{body}'")
             send_email(recipient, subject, email_content)  # Send AI-composed email
