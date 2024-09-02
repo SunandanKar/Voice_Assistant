@@ -33,8 +33,8 @@ This repository contains a Python-based voice assistant project that leverages v
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/YourUsername/YourRepoName.git
-   cd YourRepoName
+   git clone https://github.com/SunandanKar/Voice_Assistant.git
+   cd Voice_Assistant
    ```
 
 2. **Install the required dependencies:**
